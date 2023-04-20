@@ -1,12 +1,12 @@
 import * as React from 'react';
 import {ListItem, Teams as TeamsList} from 'types';
-import {getTeams as fetchTeams} from '../api';
+import {useFetchTeams} from '../data/useFetchTeams';
 import Header from '../components/Header';
 import List from '../components/List';
 import {Container} from '../components/GlobalComponents';
 
-var MapT = (teams: TeamsList[]) => {
-    return teams.map(team => {
+export const MapT = (teams: TeamsList[]) => {
+    return teams?.map(team => {
         var columns = [
             {
                 key: 'Name',
@@ -23,22 +23,12 @@ var MapT = (teams: TeamsList[]) => {
 };
 
 const Teams = () => {
-    const [teams, setTeams] = React.useState<any>([]);
-    const [isLoading, setIsLoading] = React.useState<any>(true);
-
-    React.useEffect(() => {
-        const getTeams = async () => {
-            const response = await fetchTeams();
-            setTeams(response);
-            setIsLoading(false);
-        };
-        getTeams();
-    }, []);
+    const {data, isLoading} = useFetchTeams();
 
     return (
         <Container>
             <Header title="Teams" showBackButton={false} />
-            <List items={MapT(teams)} isLoading={isLoading} />
+            <List items={MapT(data)} isLoading={isLoading} />
         </Container>
     );
 };

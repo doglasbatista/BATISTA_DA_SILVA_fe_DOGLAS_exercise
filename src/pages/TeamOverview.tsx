@@ -1,13 +1,14 @@
 import * as React from 'react';
 import {useLocation, useParams} from 'react-router-dom';
 import {ListItem, UserData} from 'types';
-import {getTeamOverview, getUserData} from '../api';
 import Card from '../components/Card';
 import {Container} from '../components/GlobalComponents';
 import Header from '../components/Header';
 import List from '../components/List';
+import {useFetchTeamUsers} from '../data/useFetchTeamUsers';
 
-var mapArray = (users: UserData[]) => {
+// TODO: extract this into a separete file
+export const mapArray = (users: UserData[]) => {
     return users.map(u => {
         var columns = [
             {
@@ -54,35 +55,10 @@ var mapTLead = tlead => {
     return <Card columns={columns} url={`/user/${tlead.id}`} navigationProps={tlead} />;
 };
 
-interface PageState {
-    teamLead?: UserData;
-    teamMembers?: UserData[];
-}
-
 const TeamOverview = () => {
     const location = useLocation();
     const {teamId} = useParams();
-    const [pageData, setPageData] = React.useState<PageState>({});
-    const [isLoading, setIsLoading] = React.useState<boolean>(true);
-
-    React.useEffect(() => {
-        var getTeamUsers = async () => {
-            const {teamLeadId, teamMemberIds = []} = await getTeamOverview(teamId);
-            const teamLead = await getUserData(teamLeadId);
-
-            const teamMembers = [];
-            for(var teamMemberId of teamMemberIds) {
-                const data = await getUserData(teamMemberId);
-                teamMembers.push(data);
-            }
-            setPageData({
-                teamLead,
-                teamMembers,
-            });
-            setIsLoading(false);
-        };
-        getTeamUsers();
-    }, [teamId]);
+    const {pageData, isLoading} = useFetchTeamUsers(teamId);
 
     return (
         <Container>
