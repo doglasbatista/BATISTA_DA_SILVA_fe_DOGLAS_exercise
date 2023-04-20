@@ -9,9 +9,9 @@ type State = {
 };
 
 type Action =
-    | {type: 'FETCH_INIT' }
-    | {type: 'FETCH_SUCCESS'; payload: TeamsList[] }
-    | {type: 'FETCH_FAILURE'; payload: string };
+    | {type: 'FETCH_INIT'}
+    | {type: 'FETCH_SUCCESS'; payload: TeamsList[]}
+    | {type: 'FETCH_FAILURE'; payload: string};
 
 const dataFetchReducer = (state: State, action: Action): State => {
     switch (action.type) {

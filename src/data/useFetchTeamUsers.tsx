@@ -14,9 +14,9 @@ export interface TeamUsersState {
 }
 
 type Action =
-    | {type: 'SET_PAGE_DATA'; payload: PageState }
-    | {type: 'SET_LOADING'; payload: boolean }
-    | {type: 'SET_ERROR'; payload: boolean };
+    | {type: 'SET_PAGE_DATA'; payload: PageState}
+    | {type: 'SET_LOADING'; payload: boolean}
+    | {type: 'SET_ERROR'; payload: boolean};
 
 const initialState: TeamUsersState = {
     pageData: {},
@@ -43,8 +43,7 @@ export const useFetchTeamUsers = (teamId: string): TeamUsersState => {
     useEffect(() => {
         const getTeamUsers = async () => {
             try {
-                const {teamLeadId, teamMemberIds = []} = await
-                    getTeamOverview(teamId);
+                const {teamLeadId, teamMemberIds = []} = await getTeamOverview(teamId);
                 const teamLead = await getUserData(teamLeadId);
 
                 const teamMembers = [];
@@ -55,8 +54,8 @@ export const useFetchTeamUsers = (teamId: string): TeamUsersState => {
 
                 dispatch({
                     type: 'SET_PAGE_DATA',
-                    payload: {teamLead, teamMembers,
-                }});
+                    payload: {teamLead, teamMembers},
+                });
                 dispatch({type: 'SET_LOADING', payload: false});
             } catch (err) {
                 dispatch({type: 'SET_ERROR', payload: true});
