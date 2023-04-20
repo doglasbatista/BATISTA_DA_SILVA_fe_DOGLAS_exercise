@@ -39,7 +39,7 @@ describe('useFetchTeamUsers', () => {
             {id: 'member-1-id', name: 'Member 1'},
             {id: 'member-2-id', name: 'Member 2'},
         ]);
-   });
+    });
 
     it('handles empty team members', async () => {
         (getTeamOverview as jest.Mock).mockResolvedValue({

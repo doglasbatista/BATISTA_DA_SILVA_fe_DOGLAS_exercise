@@ -27,9 +27,7 @@ const UserOverview = () => {
     const location = useLocation();
     return (
         <Container>
-            <Header
-                title={`User ${location.state.firstName} ${location.state.lastName}`}
-            />
+            <Header title={`User ${location.state.firstName} ${location.state.lastName}`} />
             {mapU(location.state)}
         </Container>
     );
