@@ -1,54 +1,77 @@
 import * as React from 'react';
-import {fireEvent, render, screen, waitFor, act} from '@testing-library/react';
-import * as API from '../../api';
-import Teams from '../Teams';
+import {render} from '@testing-library/react';
+import Teams, {MapT} from '../Teams';
+import {useFetchTeams} from '../../data/useFetchTeams';
+import Header from '../../components/Header';
+import List from '../../components/List';
 
-jest.mock('react-router-dom', () => ({
-    useLocation: () => ({
-        state: {
-            firstName: 'Test',
-            lastName: 'User',
-            displayName: 'userName',
-            location: 'location',
-        },
-    }),
-    useNavigate: () => ({}),
-}));
+jest.mock('../../data/useFetchTeams');
+jest.mock('../../components/Header');
+jest.mock('../../components/List');
+
+const HeaderMock = Header as jest.Mock;
+const ListMock = List as jest.Mock;
+
+const teamsData = [
+    {
+        id: 'team-1',
+        name: 'Team 1',
+    },
+    {
+        id: 'team-2',
+        name: 'Team 2',
+    },
+];
 
 describe('Teams', () => {
-    beforeAll(() => {
-        jest.useFakeTimers();
+    beforeEach(() => {
+        (useFetchTeams as jest.Mock).mockReturnValue({
+            data: teamsData,
+            isLoading: false,
+        });
     });
 
-    afterEach(() => {
-        jest.clearAllTimers();
+    it('renders header with title', () => {
+        render(<Teams />);
+
+        expect(HeaderMock).toHaveBeenCalledTimes(1);
+        expect(HeaderMock).toHaveBeenCalledWith(
+            expect.objectContaining({
+                title: 'Teams',
+                showBackButton: false,
+            }),
+            {}
+        );
     });
 
-    afterAll(() => {
-        jest.useRealTimers();
+    it('renders teams list', () => {
+        render(<Teams />);
+
+        expect(ListMock).toHaveBeenCalledTimes(1);
+        expect(ListMock).toHaveBeenCalledWith(
+            expect.objectContaining({
+                items: MapT(teamsData),
+                isLoading: false,
+            }),
+            {}
+        );
     });
 
-    it('should render spinner while loading', async () => {
-        // TODO - Add code for this test
-    });
-
-    it('should render teams list', async () => {
-        jest.spyOn(API, 'getTeams').mockResolvedValue([
-            {
-                id: '1',
-                name: 'Team1',
-            },
-            {
-                id: '2',
-                name: 'Team2',
-            },
-        ]);
+    it('renders spinner while loading', () => {
+        (useFetchTeams as jest.Mock).mockReturnValue({
+            data: null,
+            isLoading: true,
+        });
 
         render(<Teams />);
 
-        await waitFor(() => {
-            expect(screen.getByText('Team1')).toBeInTheDocument();
-        });
-        expect(screen.getByText('Team2')).toBeInTheDocument();
+        expect(ListMock).toHaveBeenCalledTimes(1);
+        expect(ListMock).toHaveBeenCalledWith(
+            expect.objectContaining({
+                items: MapT(null),
+                isLoading: true,
+            }),
+            {}
+        );
     });
 });
