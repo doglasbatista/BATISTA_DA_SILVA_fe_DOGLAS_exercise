@@ -1,4 +1,4 @@
-import TeamLeadCard from 'components/TeamLeadCard';
+import TeamMemberCard from 'components/TeamMemberCard';
 import * as React from 'react';
 import {useLocation, useParams} from 'react-router-dom';
 import {mapUsersToListItems} from 'utils/teamOverviewUtils';
@@ -15,7 +15,7 @@ const TeamOverview = () => {
     return (
         <Container>
             <Header title={`Team ${location.state.name}`} />
-            {!isLoading && <TeamLeadCard teamLead={pageData.teamLead} />}
+            {!isLoading && <TeamMemberCard isLead memberData={pageData.teamLead} />}
             <List items={mapUsersToListItems(pageData?.teamMembers ?? [])} isLoading={isLoading} />
         </Container>
     );
