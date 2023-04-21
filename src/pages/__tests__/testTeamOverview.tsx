@@ -4,7 +4,7 @@ import {mapUsersToListItems} from 'utils/teamOverviewUtils';
 import {TeamUsersState, useFetchTeamUsers} from 'data/useFetchTeamUsers';
 import Header from 'components/Header';
 import List from 'components/List';
-import TeamLeadCard from 'components/TeamLeadCard';
+import TeamMemberCard from 'components/TeamMemberCard';
 import {UserData} from 'types';
 import TeamOverview from '../TeamOverview';
 
@@ -22,11 +22,11 @@ jest.mock('react-router-dom', () => ({
 jest.mock('data/useFetchTeamUsers');
 jest.mock('components/Header');
 jest.mock('components/List');
-jest.mock('components/TeamLeadCard');
+jest.mock('components/TeamMemberCard');
 
 const HeaderMock = Header as jest.Mock;
 const ListMock = List as jest.Mock;
-const TeamLeadCardMock = TeamLeadCard as jest.Mock;
+const TeamMemberCardMock = TeamMemberCard as jest.Mock;
 
 const teamMembers: UserData[] = [
     {
@@ -83,14 +83,15 @@ describe('TeamOverview', () => {
         });
     });
 
-    describe('TeamLeadCard', () => {
+    describe('TeamMemberCard', () => {
         it('renders team lead data', () => {
             render(<TeamOverview />);
 
-            expect(TeamLeadCardMock).toHaveReturnedTimes(1);
-            expect(TeamLeadCardMock).toHaveBeenCalledWith(
+            expect(TeamMemberCardMock).toHaveReturnedTimes(1);
+            expect(TeamMemberCardMock).toHaveBeenCalledWith(
                 expect.objectContaining({
-                    teamLead,
+                    memberData: teamLead,
+                    isLead: true,
                 }),
                 {}
             );
