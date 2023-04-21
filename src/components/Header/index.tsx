@@ -7,14 +7,16 @@ interface Props {
     showBackButton?: boolean;
 }
 
-const Header = ({title, showBackButton = true}: Props) => {
+const Header = ({title, showBackButton = true}: Props): JSX.Element => {
     const navigate = useNavigate();
     return (
         <HeaderContainer>
             <NavigationHeader>
                 {showBackButton && (
                     <BackButton
-                        onClick={() => {
+                        onClick={(e: React.MouseEvent) => {
+                            e.preventDefault();
+
                             navigate(-1);
                         }}
                     >
