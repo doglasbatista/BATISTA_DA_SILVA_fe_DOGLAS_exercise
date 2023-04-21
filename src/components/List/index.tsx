@@ -5,28 +5,28 @@ import {Spinner} from '../Spinner';
 import {Container} from './styles';
 
 interface Props {
-    items?: ListItem[];
+    items: ListItem[];
     hasNavigation?: boolean;
     isLoading: boolean;
 }
 
-const List = ({items, hasNavigation = true, isLoading}: Props) => {
+const List = ({items, hasNavigation = true, isLoading}: Props): JSX.Element => {
     return (
         <Container>
-            {isLoading && <Spinner />}
-            {!isLoading &&
-                items.map(({url, id, columns, navigationProps}, index) => {
-                    return (
-                        <Card
-                            key={`${id}-${index}`}
-                            id={id}
-                            columns={columns}
-                            navigationProps={navigationProps}
-                            hasNavigation={hasNavigation}
-                            url={url}
-                        />
-                    );
-                })}
+            {isLoading ? (
+                <Spinner />
+            ) : (
+                items.map(({url, id, columns, navigationProps}, index) => (
+                    <Card
+                        key={`${id}-${index}`}
+                        id={id}
+                        columns={columns}
+                        navigationProps={navigationProps}
+                        hasNavigation={hasNavigation}
+                        url={url}
+                    />
+                ))
+            )}
         </Container>
     );
 };
