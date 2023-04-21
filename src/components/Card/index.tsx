@@ -27,13 +27,14 @@ const Card = ({
         <Container
             data-testid={`cardContainer-${id}`}
             hasNavigation={hasNavigation}
-            onClick={(e: Event) => {
+            onClick={(e: React.MouseEvent) => {
+                e.preventDefault();
+
                 if (hasNavigation) {
                     navigate(url, {
                         state: navigationProps,
                     });
                 }
-                e.preventDefault();
             }}
         >
             {columns.map(({key: columnKey, value}) => (
