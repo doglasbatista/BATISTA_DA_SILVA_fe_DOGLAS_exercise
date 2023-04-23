@@ -1,10 +1,10 @@
-import {Teams} from 'types';
+import {Team} from 'types';
 import {mapTeamsToListItems} from '../teamUtils';
 
 describe('teamUtils', () => {
     describe('mapTeamsToListItems', () => {
         it('should correctly map teams to list items', () => {
-            const teams: Teams[] = [
+            const teams: Team[] = [
                 {
                     id: '1',
                     name: 'Team 1',

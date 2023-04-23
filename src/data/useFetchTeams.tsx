@@ -1,16 +1,16 @@
 import {useReducer, useEffect, useRef} from 'react';
-import {Teams as TeamsList} from 'types';
+import {Team} from 'types';
 import {getTeams} from 'api';
 
 type State = {
-    data: TeamsList[] | null;
+    data: Team[] | null;
     isLoading: boolean;
     error: string | null;
 };
 
 type Action =
     | {type: 'FETCH_INIT'}
-    | {type: 'FETCH_SUCCESS'; payload: TeamsList[]}
+    | {type: 'FETCH_SUCCESS'; payload: Team[]}
     | {type: 'FETCH_FAILURE'; payload: string};
 
 const dataFetchReducer = (state: State, action: Action): State => {

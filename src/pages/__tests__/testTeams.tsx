@@ -1,17 +1,26 @@
 import * as React from 'react';
-import {render} from '@testing-library/react';
-import Teams from '../Teams';
-import {useFetchTeams} from '../../data/useFetchTeams';
-import Header from '../../components/Header';
-import List from '../../components/List';
-import {mapTeamsToListItems} from '../../utils/teamUtils';
+import {render, waitFor} from '@testing-library/react';
+import {useFetchTeams} from 'data/useFetchTeams';
+import {useTypeahead} from 'hooks/useTypeahead';
+import {useDebounce} from 'hooks/useDebounce';
+import Header from 'components/Header';
+import List from 'components/List';
+import Input from 'components/Input';
+import {mapTeamsToListItems} from 'utils/teamUtils';
+import Teams, {filteredTeams} from '../Teams';
 
-jest.mock('../../data/useFetchTeams');
-jest.mock('../../components/Header');
-jest.mock('../../components/List');
+jest.mock('data/useFetchTeams');
+jest.mock('components/Header');
+jest.mock('components/List');
+jest.mock('components/Input');
+jest.mock('hooks/useTypeahead');
+jest.mock('hooks/useDebounce');
 
 const HeaderMock = Header as jest.Mock;
 const ListMock = List as jest.Mock;
+const InputMock = Input as jest.Mock;
+const useTypeaheadMock = useTypeahead as jest.Mock;
+const useDebounceMock = useDebounce as jest.Mock;
 
 const teamsData = [
     {
@@ -25,13 +34,19 @@ const teamsData = [
 ];
 
 describe('Teams', () => {
+    beforeEach(() => {
+        (useDebounce as jest.Mock).mockReturnValue('');
+        (useTypeahead as jest.Mock).mockReturnValue({
+            searchValue: '',
+            handleSearchChange: () => null,
+        });
+        (useFetchTeams as jest.Mock).mockReturnValue({
+            data: teamsData,
+            isLoading: false,
+        });
+    });
     describe('Header', () => {
         it('renders header with title', () => {
-            (useFetchTeams as jest.Mock).mockReturnValue({
-                data: teamsData,
-                isLoading: false,
-            });
-
             render(<Teams />);
 
             expect(HeaderMock).toHaveBeenCalledTimes(1);
@@ -45,13 +60,51 @@ describe('Teams', () => {
         });
     });
 
-    describe('List', () => {
-        it('renders teams list', () => {
-            (useFetchTeams as jest.Mock).mockReturnValue({
-                data: teamsData,
-                isLoading: false,
+    describe('useTypeahead', () => {
+        it('calls useTypeahead hook', () => {
+            render(<Teams />);
+
+            expect(useTypeaheadMock).toHaveBeenCalledTimes(1);
+        });
+    });
+
+    describe('useDebounce', () => {
+        it('calls useDebounce with expected values', () => {
+            (useTypeahead as jest.Mock).mockReturnValue({
+                searchValue: 'gold',
+                handleSearchChange: () => null,
             });
 
+            render(<Teams />);
+
+            expect(useDebounceMock).toHaveBeenCalledTimes(1);
+            expect(useDebounceMock).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    value: 'gold',
+                })
+            );
+        });
+    });
+
+    describe('Search Input', () => {
+        it('renders search input when not loading', () => {
+            render(<Teams />);
+
+            expect(InputMock).toHaveBeenCalledTimes(1);
+            expect(InputMock).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    type: 'text',
+                    placeholder: 'Search teams...',
+                    onChange: expect.any(Function),
+                    value: '',
+                }),
+                {}
+            );
+        });
+    });
+
+    describe('List', () => {
+        it('renders teams list', () => {
             render(<Teams />);
 
             expect(ListMock).toHaveBeenCalledTimes(1);
@@ -80,6 +133,22 @@ describe('Teams', () => {
                 }),
                 {}
             );
+        });
+
+        it('filters teams based on search input', async () => {
+            (useDebounce as jest.Mock).mockReturnValue('gold');
+
+            render(<Teams />);
+
+            await waitFor(() => {
+                expect(ListMock).toHaveBeenCalledWith(
+                    expect.objectContaining({
+                        items: filteredTeams(teamsData, 'gold'),
+                        isLoading: false,
+                    }),
+                    {}
+                );
+            });
         });
     });
 });

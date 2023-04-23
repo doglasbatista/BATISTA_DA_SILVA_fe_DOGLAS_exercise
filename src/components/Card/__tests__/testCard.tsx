@@ -1,6 +1,6 @@
 import React from 'react';
 import {fireEvent, render, screen} from '@testing-library/react';
-import {Teams} from 'types';
+import {Team} from 'types';
 import Card from '..';
 
 const mockUseNavigate = jest.fn();
@@ -38,7 +38,7 @@ describe('Card', () => {
     });
 
     it('should navigate when card is clicked and navigation is enabled', () => {
-        const navProps: Teams = {
+        const navProps: Team = {
             id: '1',
             name: 'Team 1',
         };

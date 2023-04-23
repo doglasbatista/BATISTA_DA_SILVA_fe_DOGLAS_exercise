@@ -1,6 +1,6 @@
-import {ListItem, Teams as TeamsList} from 'types';
+import {ListItem, Team} from 'types';
 
-export const mapTeamsToListItems = (teams: TeamsList[]): ListItem[] => {
+export const mapTeamsToListItems = (teams: Team[]): ListItem[] => {
     return teams?.map(team => {
         const columns = [
             {
