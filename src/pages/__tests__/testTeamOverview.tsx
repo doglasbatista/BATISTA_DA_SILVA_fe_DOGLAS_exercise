@@ -1,12 +1,17 @@
 import * as React from 'react';
-import {render, screen, waitFor} from '@testing-library/react';
-import * as API from '../../api';
+import {render} from '@testing-library/react';
+import {mapUsersToListItems} from 'utils/teamOverviewUtils';
+import {TeamUsersState, useFetchTeamUsers} from 'data/useFetchTeamUsers';
+import Header from 'components/Header';
+import List from 'components/List';
+import TeamMemberCard from 'components/TeamMemberCard';
+import {UserData} from 'types';
 import TeamOverview from '../TeamOverview';
 
 jest.mock('react-router-dom', () => ({
     useLocation: () => ({
         state: {
-            teamName: 'Some Team',
+            name: 'Some Team',
         },
     }),
     useNavigate: () => ({}),
@@ -14,41 +19,114 @@ jest.mock('react-router-dom', () => ({
         teamId: '1',
     }),
 }));
+jest.mock('data/useFetchTeamUsers');
+jest.mock('components/Header');
+jest.mock('components/List');
+jest.mock('components/TeamMemberCard');
+
+const HeaderMock = Header as jest.Mock;
+const ListMock = List as jest.Mock;
+const TeamMemberCardMock = TeamMemberCard as jest.Mock;
+
+const teamMembers: UserData[] = [
+    {
+        id: '2',
+        firstName: 'user',
+        lastName: 'two',
+        displayName: 'user-two',
+        location: '',
+        avatar: '',
+    },
+    {
+        id: '3',
+        firstName: 'user',
+        lastName: 'three',
+        displayName: 'user-three',
+        location: '',
+        avatar: '',
+    },
+];
+const teamLead: UserData = {
+    id: '1',
+    firstName: 'user',
+    lastName: 'one',
+    displayName: 'user-one',
+    location: '',
+    avatar: '',
+};
 
 describe('TeamOverview', () => {
-    beforeAll(() => {
-        jest.useFakeTimers();
-    });
-
-    afterEach(() => {
-        jest.clearAllTimers();
-    });
-
-    afterAll(() => {
-        jest.useRealTimers();
-    });
-
-    it('should render team overview users', async () => {
-        const teamOverview = {
-            id: '1',
-            teamLeadId: '2',
-            teamMemberIds: ['3', '4', '5'],
+    beforeEach(() => {
+        const mockData: TeamUsersState = {
+            pageData: {
+                teamMembers,
+                teamLead,
+            },
+            error: false,
+            isLoading: false,
         };
-        const userData = {
-            id: '2',
-            firstName: 'userData',
-            lastName: 'userData',
-            displayName: 'userData',
-            location: '',
-            avatar: '',
-        };
-        jest.spyOn(API, 'getTeamOverview').mockImplementationOnce(() => Promise.resolve({} as any));
-        jest.spyOn(API, 'getUserData').mockImplementationOnce(() => Promise.resolve({} as any));
 
-        render(<TeamOverview />);
+        (useFetchTeamUsers as jest.Mock).mockReturnValue(mockData);
+    });
 
-        await waitFor(() => {
-            expect(screen.queryAllByText('userData')).toHaveLength(4);
+    describe('Header', () => {
+        it('renders header with team name', () => {
+            render(<TeamOverview />);
+
+            expect(HeaderMock).toHaveBeenCalledTimes(1);
+            expect(HeaderMock).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    title: 'Team Some Team',
+                }),
+                {}
+            );
+        });
+    });
+
+    describe('TeamMemberCard', () => {
+        it('renders team lead data', () => {
+            render(<TeamOverview />);
+
+            expect(TeamMemberCardMock).toHaveReturnedTimes(1);
+            expect(TeamMemberCardMock).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    memberData: teamLead,
+                    isLead: true,
+                }),
+                {}
+            );
+        });
+    });
+
+    describe('List', () => {
+        it('renders team members list', () => {
+            render(<TeamOverview />);
+
+            expect(ListMock).toHaveBeenCalledTimes(1);
+            expect(ListMock).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    items: mapUsersToListItems(teamMembers),
+                }),
+                {}
+            );
+        });
+
+        it('renders spinner while loading', () => {
+            (useFetchTeamUsers as jest.Mock).mockReturnValue({
+                pageData: null,
+                isLoading: true,
+            });
+
+            render(<TeamOverview />);
+
+            expect(ListMock).toHaveBeenCalledTimes(1);
+            expect(ListMock).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    items: mapUsersToListItems([]),
+                    isLoading: true,
+                }),
+                {}
+            );
         });
     });
 });

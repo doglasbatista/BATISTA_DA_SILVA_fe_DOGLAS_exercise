@@ -10,16 +10,8 @@ jest.mock('react-router-dom', () => ({
 }));
 
 describe('Header', () => {
-    beforeAll(() => {
-        jest.useFakeTimers();
-    });
-
-    afterEach(() => {
-        jest.clearAllTimers();
-    });
-
-    afterAll(() => {
-        jest.useRealTimers();
+    beforeEach(() => {
+        mockUseNavigate.mockReset();
     });
 
     it('should render header', () => {
@@ -46,5 +38,13 @@ describe('Header', () => {
         fireEvent.click(screen.getByRole('button'));
 
         expect(mockUseNavigate).toHaveBeenCalled();
+    });
+
+    it('should call preventDefault when back button is clicked', () => {
+        render(<Header title="Header" showBackButton />);
+
+        const preventDefault = fireEvent.click(screen.getByRole('button'));
+
+        expect(preventDefault).toBe(false);
     });
 });
