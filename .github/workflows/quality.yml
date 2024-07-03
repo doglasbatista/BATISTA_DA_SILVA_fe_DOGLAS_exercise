@@ -45,8 +45,8 @@ jobs:
       - name: Get NPM cache directory path (lint)
         run: echo "::set-output name=dir::$(npm config get cache)"
 
-      - name: Use cache for dependencies
-        name: Restore NPM Cache
+      
+      - name: Restore NPM Cache
         uses: actions/cache@v2
         with:
           path: ${{ needs.setup.outputs.cache-dir }}
