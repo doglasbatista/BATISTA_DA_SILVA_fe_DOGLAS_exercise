@@ -1,38 +1,67 @@
-name: CI Pipeline
-
+name: ci
 on:
   pull_request:
     branches: [ main, dev ]
 
 jobs:
-  build-and-test:
+  setup:
     runs-on: ubuntu-latest
-
+    outputs:
+      cache-dir: ${{ steps.npm-cache-dir-path.outputs.dir }}
+      
     steps:
-      - name: Checkout Code
+      - name: checkout repo
         uses: actions/checkout@v2
 
-      - name: Setup Node.js
+      - id: npm-cache-dir_path
+        name: get npm cache directory path
+        run: echo "::set-output name=dir::$(npm config get cache)"
+
+      - name: setup node
         uses: actions/setup-node@v1
         with:
-          node-version: '16'  # Use the node version that matches your development environment
-
-      - name: Cache Node Modules
-        uses: actions/cache@v2
-        with:
-          # npm cache files are stored in `~/.npm` on Unix, or `%AppData%/npm-cache` on Windows
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-            ${{ runner.os }}-
-
-      - name: Install Dependencies
+          node-version: '16'
+      
+      - name: install dependencies
         run: npm ci
 
-      - name: Lint
-        run: npm run lint  # Make sure this script is defined in your package.json
+      - name: cache npm
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.npm-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-
+            
+  tests:
+    needs: setup
+    strategy:
+      matrix:
+        include:
+          - job-name: Lint
+            script: npm run lint:check
+          - job-name: Typecheck
+            script: npm run tsc-check
+          - job-name: Unit Test
+            script: npm test -- --coverage
 
-      - name: Run Tests
-        run: npm test  # Make sure the test command matches what you have in package.json
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v2
+      
+      - name: Setup Node
+        uses: actions/setup-node@v1
+        with:
+          node-version: 16
 
+      - name: Restore cache
+        uses: actions/cache@v2
+        with:
+          path: ${{ needs.setup.outputs.cache-dir }}
+          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-
+      
+      - name: Run ${{ matrix.job-name }}
+        run: ${{ matrix.script }}
