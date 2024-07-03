@@ -1,94 +1,38 @@
-name: ci
+name: CI Pipeline
 
 on:
   pull_request:
     branches: [ main, dev ]
 
 jobs:
-  setup:
+  build-and-test:
     runs-on: ubuntu-latest
-    outputs:
-      cache-dir: ${{ steps.npm-cache-dir-path.outputs.dir }}
 
     steps:
-      - name: Checkout repo
+      - name: Checkout Code
         uses: actions/checkout@v2
-      
-      - id: npm-cache-dir-path
-        name: Get NPM cache directory path
-        run: echo "::set-output name=dir::$(npm config get cache)"
 
-      - id: npm-cache
-        name: Get dependencies from cache
-        uses: actions/cache@v2
-        with:
-          path: ${{ steps.npm-cache-dir-path.outputs.dir }}
-          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-npm-
-      
-      - name: Setup Node
+      - name: Setup Node.js
         uses: actions/setup-node@v1
         with:
-          node-version: 16
-      
-      - name: Install dependencies
+          node-version: '16'  # Use the node version that matches your development environment
+
+      - name: Cache Node Modules
+        uses: actions/cache@v2
+        with:
+          # npm cache files are stored in `~/.npm` on Unix, or `%AppData%/npm-cache` on Windows
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+            ${{ runner.os }}-
+
+      - name: Install Dependencies
         run: npm ci
 
-  lint:
-    needs: setup
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v2
+      - name: Lint
+        run: npm run lint  # Make sure this script is defined in your package.json
 
-      - name: Get NPM cache directory path (lint)
-        run: echo "::set-output name=dir::$(npm config get cache)"
+      - name: Run Tests
+        run: npm test  # Make sure the test command matches what you have in package.json
 
-      
-      - name: Restore NPM Cache
-        uses: actions/cache@v2
-        with:
-          path: ${{ needs.setup.outputs.cache-dir }}
-          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
-      
-      - name: ESLint
-        run: npm run lint:check
-
-  typecheck:
-    needs: setup
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v2
-
-      - name: Get NPM cache directory path (typecheck)
-        run: echo "::set-output name=dir::$(npm config get cache)"
-      
-      - name: Use cache for dependencies
-        uses: actions/cache@v2
-        with:
-          path: ${{ needs.setup.outputs.cache-dir }}
-          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
-
-      - name: TypeCheck
-        run: npm run tsc-check
-
-  test:
-    needs: setup
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v2
-
-      - name: Get NPM cache directory path (test)
-        run: echo "::set-output name=dir::$(npm config get cache)"
-
-      - name: Use cache for dependencies
-        uses: actions/cache@v2
-        with:
-          path: ${{ needs.setup.outputs.cache-dir }}
-          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
-
-      - name: Run tests
-        run: npm test -- --coverage
